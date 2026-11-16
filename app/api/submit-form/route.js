@@ -42,8 +42,12 @@ export async function POST(request) {
 
     const telegramResult = await telegramResponse.json();
 
-    if (!telegramResult.ok) {
-      throw new Error("Không thể gửi tin nhắn lên Telegram");
+  if (!telegramResult.ok) {
+      console.error("Telegram Error:", telegramResult);
+      return NextResponse.json(
+        { success: false, error: `Telegram lỗi: ${telegramResult.description}` },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ 
