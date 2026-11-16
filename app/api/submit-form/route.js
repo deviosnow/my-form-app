@@ -5,7 +5,6 @@ export async function POST(request) {
     const body = await request.json();
     const { name, email } = body;
 
-    // Kiểm tra dữ liệu đầu vào cơ bản
     if (!name || !email) {
       return NextResponse.json(
         { success: false, error: "Thiếu thông tin bắt buộc" },
@@ -13,22 +12,18 @@ export async function POST(request) {
       );
     }
 
-    // Lấy Token và Chat ID từ biến môi trường (Bảo mật tuyệt đối)
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
     if (!BOT_TOKEN || !CHAT_ID) {
-      console.error("Chưa cấu hình Telegram Token hoặc Chat ID trong biến môi trường!");
       return NextResponse.json(
-        { success: false, error: "Lỗi cấu hình server" },
+        { success: false, error: "Thiếu biến môi trường Telegram trên Server." },
         { status: 500 }
       );
     }
 
-    // Soạn nội dung tin nhắn gửi về Telegram
-    const message = `🔔 *Có thông tin form mới từ Website!*\n\n👤 *Họ tên:* ${name}\n📧 *Email:* ${email}\n🕒 *Thời gian:* ${new Date().toLocaleString("vi-VN")}`;
+    const message = `🔔 *Có thông tin form mới!*\n\n👤 *Họ tên:* ${name}\n📧 *Email:* ${email}`;
 
-    // Gọi API chính thức của Telegram để gửi tin nhắn
     const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
     const telegramResponse = await fetch(telegramUrl, {
       method: "POST",
@@ -36,16 +31,17 @@ export async function POST(request) {
       body: JSON.stringify({
         chat_id: CHAT_ID,
         text: message,
-        parse_mode: "Markdown", // Dùng Markdown để in đậm đẹp mắt
+        parse_mode: "Markdown",
       }),
     });
 
     const telegramResult = await telegramResponse.json();
 
-  if (!telegramResult.ok) {
-      console.error("Telegram Error:", telegramResult);
+    // Nếu Telegram không đồng ý, trả thẳng lỗi chi tiết ra giao diện web
+    if (!telegramResult.ok) {
+      console.error("Telegram API Error:", telegramResult);
       return NextResponse.json(
-        { success: false, error: `Telegram lỗi: ${telegramResult.description}` },
+        { success: false, error: `Telegram từ chối: ${telegramResult.description}` },
         { status: 500 }
       );
     }
@@ -56,9 +52,9 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error("Lỗi API:", error);
+    console.error("System Error:", error);
     return NextResponse.json(
-      { success: false, error: "Lỗi xử lý dữ liệu" }, 
+      { success: false, error: `Lỗi hệ thống: ${error.message}` }, 
       { status: 500 }
     );
   }
