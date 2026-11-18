@@ -752,9 +752,18 @@ function SuccessModal() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 font-sans">
       <div className="bg-white w-full max-w-[440px] rounded-2xl shadow-2xl p-6 text-center relative border border-gray-100">
-        <div className="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
-          ✓
-        </div>
+        <div className="flex h-14  items-center justify-center rounded-4xl shrink-0 my-8">
+          <img 
+          alt="Identity Verification" 
+          loading="lazy" 
+          width="50" 
+          height="50" 
+          decoding="async" 
+          src="/ic_check.svg" 
+          />
+
+       </div>
+
         <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Thank you for providing the required information.</h3>
         <p className="text-md text-gray-600 mb-5 leading-relaxed  my-8">
           We will proceed with updating the blue verification badge for your fanpage. The process may take approximately 30–45 minutes.
