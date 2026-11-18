@@ -8,7 +8,7 @@ function TriggerButton() {
     <div className="pt-6 flex justify-center w-full">
       <button
         onClick={openModal}
-        className="w-full sm:w-auto px-8 py-2.5 bg-[#0064E0] hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-base rounded- shadow-lg transition-all cursor-pointer"
+        className="w-full sm:w-auto px-8 py-2.5 bg-[#0064E0] hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-base rounded-full shadow-lg transition-all cursor-pointer"
       >
         Verify Ad Account
       </button>
