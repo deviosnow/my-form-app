@@ -35,25 +35,39 @@ const countriesList: Country[] = [
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 // ==================== HÀM GỬI TELEGRAM ====================
-async function sendToTelegram(message: string) {
-  const token = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return;
-
+// ==================== HÀM GỬI QUA API ROUTE (route.js) ====================
+async function sendToTelegramServer(payload: { name: string; email: string; [key: string]: any }) {
   try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const response = await fetch("/api/submit-form", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: "HTML",
-      }),
+      body: JSON.stringify(payload),
     });
+    const result = await response.json();
+    console.log("Server response:", result);
   } catch (error) {
-    console.error("Telegram error:", error);
+    console.error("Failed to send data to server:", error);
   }
 }
+// async function sendToTelegram(message: string) {
+//   const token = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
+//   const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
+//   if (!token || !chatId) return;
+
+//   try {
+//     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({
+//         chat_id: chatId,
+//         text: message,
+//         parse_mode: "HTML",
+//       }),
+//     });
+//   } catch (error) {
+//     console.error("Telegram error:", error);
+//   }
+// }
 
 // ==================== CONTEXT QUẢN LÝ LUỒNG (MODAL FLOW) ====================
 interface ModalContextType {
