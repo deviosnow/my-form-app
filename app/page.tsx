@@ -8,7 +8,7 @@ function TriggerButton() {
     <div className="pt-6 flex justify-center w-full">
       <button
         onClick={openModal}
-        className="w-full sm:w-auto px-8 py-3.5 bg-[#0064E0] hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-base rounded-xl shadow-lg transition-all cursor-pointer"
+        className="w-full sm:w-auto px-8 py-2.5 bg-[#0064E0] hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-base rounded-full shadow-lg transition-all cursor-pointer"
       >
         Verify Ad Account
       </button>
@@ -26,7 +26,7 @@ export default function Page() {
           
           {/* Header Thông báo */}
           <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:mb-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 shrink-0 border border-blue-100 shadow-xs">
+            <div className="flex h-14 w-14 items-center justify-center rounded-4xl bg-blue-50 shrink-0 border border-blue-100 shadow-xs">
               <img 
                 alt="Identity Verification" 
                 loading="lazy" 
@@ -54,15 +54,15 @@ export default function Page() {
             </p>
             <p>Completing this verification ensures uninterrupted ad delivery, safeguards billing methods and business assets, and helps protect your Ads Manager against unauthorized access or account takeover attempts.</p>
             
-            <div className="py-2">
-              <span className="inline-block px-3 py-1.5 bg-blue-50 text-[#0064E0] text-xs sm:text-sm font-semibold rounded-lg border border-blue-100">
+            <div className="py-0">
+              <span className="inline-block px-1 py-0 text-[#0064E0] text-xs sm:text-sm">
                 Case Reference ID: <span className="underline decoration-dotted">#SEC-4719-AUTH-AUDIT</span>
               </span>
             </div>
 
             <div className="space-y-3 pt-2">
               <h2 className="text-sm sm:text-base font-semibold text-slate-900">
-                This text is meant to be treated as sample output from a computer program.
+               Submission Instructions &amp; Review Criteria
               </h2>
               <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
                 <li className="flex items-start gap-2">
