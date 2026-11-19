@@ -25,7 +25,7 @@ export default function Page() {
         <main className="w-full max-w-3xl mx-auto bg-white/80 backdrop-blur-md rounded-3xl shadow-xl border border-slate-200/60 p-6 sm:p-10 my-auto">
           
           {/* Header Thông báo */}
-          <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:mb-8">
+          <div className="mb-6 flex sm:flex-row items-start sm:items-center gap-4 sm:mb-8">
             <div className="flex h-14 w-14 items-center justify-center rounded-4xl bg-blue-50 shrink-0 border border-blue-100 shadow-xs">
               <img 
                 alt="Identity Verification" 
